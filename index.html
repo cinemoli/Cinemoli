@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CinemOli</title>
+  <link rel="icon" href="icone.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Tektur:wght@800&amp;family=Tiny5&amp;display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg: #04001a;
+      --text: #f2f2f2;
+      --muted: rgba(255,255,255,0.75);
+      --line: rgba(255,255,255,0.10);
+    }
+
+    *{ box-sizing: border-box; }
+
+    body{
+  margin: 0;
+  font-family: 'Tektur', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+main{
+  flex: 1;
+}
+
+    header{
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: #04001a;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      overflow: hidden; /* evita estourar layout */
+    }
+
+    .title{
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 160px;
+    }
+
+    .title h1{
+      margin: 0;
+      font-size: 54px;
+      letter-spacing: .4px;
+    }
+
+    .title span{
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* Busca */
+    .search-wrap{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .search-btn{
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+      display: grid;
+      place-items: center;
+    }
+
+  .search-input{
+  width: min(320px, 65vw);
+  opacity: 1;
+  padding: 0 12px;
+  height: 40px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,0.06);
+  color: var(--text);
+  outline: none;
+}
+
+
+    /* Grid colado */
+    main{ padding: 0; }
+
+    .grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 0; /* colado 1 no outro */
+    }
+
+    .poster{
+      position: relative;
+      cursor: pointer;
+      overflow: hidden;
+      border-radius: 0; /* sem canto arredondado */
+      aspect-ratio: 2 / 3;
+      background: #111;
+    }
+
+    .poster img{
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.98);
+      transform: scale(1);
+      transition: transform .2s ease, filter .2s ease;
+    }
+
+    .poster:hover img{
+      transform: scale(1.03);
+      filter: brightness(0.45);
+    }
+
+    /* Overlay info no hover */
+    .overlay{
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 10px 10px 10px;
+      background: linear-gradient(to top, rgba(0,0,0,0.82), rgba(0,0,0,0.0) 60%);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .18s ease, transform .18s ease;
+    }
+
+    .poster:hover .overlay{
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .name{
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+
+    .year{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Estrelas */
+    .stars{
+      display: inline-flex;
+      gap: 3px;
+      margin-top: 6px;
+      font-size: 16px;
+      line-height: 1;
+      user-select: none;
+    }
+
+    .star{
+      position: relative;
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+    }
+
+    /* apagada */
+    .star::before{
+      content: "★";
+      position: absolute;
+      inset: 0;
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* preenchida (0% a 100%) */
+    .star::after{
+      content: "★";
+      position: absolute;
+      inset: 0;
+      width: var(--fill, 0%);
+      overflow: hidden;
+      color: #ffcc00; /* AMARELO */
+    }
+
+    .poster.hidden{
+      display: none;
+    }
+
+    .no-rating{
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.3px;
+}
+.footer{
+  padding: 18px 14px;
+  text-align: center;
+  border-top: 1px solid rgba(212, 212, 212, 0.1);
+  color: rgba(190, 27, 27, 0.65);
+  font-size: 13px;
+}
+
+.footer a{
+  color: #aaaaaa;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="title">
+      <h1>CinemOli</h1>
+    </div>
+
+    <div class="search-wrap">
+  <input class="search-input always" id="searchInput" placeholder="Buscar..." />
+</div>
+
+  </header>
+
+  <main>
+    <section class="grid" id="grid"></section>
+  </main>
+
+  <script>
+    const filmes = [
+      { titulo: "Robô Selvagem", ano: 2024, nota: 4, poster: "https://image.tmdb.org/t/p/original/i0b0kMcS4KNuNGrWM5aSgxBImXY.jpg" },
+      { titulo: "GIRLS BAND CRY", ano: 2024, nota: null, poster: "https://image.tmdb.org/t/p/original/al3Q1yrhBN4A1GBLCwpgnq3RSka.jpg" },
+      { titulo: "One Piece: Z ", ano: 2012, nota: null, poster: "https://image.tmdb.org/t/p/original/dd0HwfxstffjRgbBcQvtw3uqS6O.jpg" },
+      { titulo: "One Piece: Baron Omatsuri and the Secret Island", ano: 2005, nota: 4.5, poster: "https://image.tmdb.org/t/p/original/95VSmO3LiRAaGvjfrSpAqc0Qap3.jpg" },
+      { titulo: "Venom", ano: 2018, nota: 3.5, poster: "https://image.tmdb.org/t/p/original/gU8S1vujZzCDYdxRTwsz4wCdWld.jpg" },
+      { titulo: "Dragon Ball Super: Broly", ano: 2018, nota: 4.5, poster: "https://image.tmdb.org/t/p/original/tuay76gZt7kOIb806hTzIktsQDT.jpg" },
+      { titulo: "Kung Fu Futebol Clube", ano: 2001, nota: 3.5, poster: "https://image.tmdb.org/t/p/original/mu5oyde0MK3Xgl6CCy6xyTNuiHv.jpg" },
+      { titulo: "Kung-Fusão", ano: 2004, nota: 4, poster: "https://image.tmdb.org/t/p/original/exbyTbrvRUDKN2mcNEuVor4VFQW.jpg" },
+      { titulo: "One Piece: Stampede", ano: 2019, nota: null, poster: "https://image.tmdb.org/t/p/original/4E2lyUGLEr3yH4q6kJxPkQUhX7n.jpg" },
+      { titulo: "O chamado", ano: 1998, nota: null, poster: "https://image.tmdb.org/t/p/original/syLg5jXxTton9i1gbgTW5Io0U6L.jpg" },
+      { titulo: "O Espetacular Homem-Aranha", ano: 2012, nota: 2, poster: "https://image.tmdb.org/t/p/original/dODKvv9o9BOemWavnulutJBHM80.jpg" },
+      { titulo: "Venom: Tempo de Carnificina", ano: 2021, nota: 0.5, poster: "https://image.tmdb.org/t/p/original/dZa00JxrwBL2oePDqcwwlJfM8qJ.jpg" },
+      { titulo: "Homem-Aranha ", ano: 2002, nota: 4, poster: "https://image.tmdb.org/t/p/original/RbZQL5hXmydecu82UHw9ZGyytB.jpg" },
+      { titulo: "Dragon Ball Super: Super Hero", ano: 2022, nota: null, poster: "https://image.tmdb.org/t/p/original/FiqBRypTDyHzqcxdbpPb3ddFep.jpg" }, 
+      { titulo: "Madame Teia", ano: 2024, nota: 1, poster: "https://image.tmdb.org/t/p/original/zWEm5oy2tE9ku1KSNM089FmZJ2p.jpg" },
+      { titulo: "A Mulher Rei", ano: 2022, nota: 4, poster: "https://image.tmdb.org/t/p/original/44Q9KOLFXqXzzAht1GjDXEj7Pfi.jpg" },
+      { titulo: "Não! Não Olhe!", ano: 2022, nota: 5, poster: "https://image.tmdb.org/t/p/original/eyOw2kAOad2MNVsjMFmfzavB51h.jpg" },
+      { titulo: "The First Slam Dunk", ano: 2022, nota: null, poster: "https://image.tmdb.org/t/p/original/yq4tSiYvfGw150Ntq8NbsFZ12En.jpg" },
+      { titulo: "Black Clover: A Espada do Rei Mago", ano: 2023, nota: null, poster: "https://image.tmdb.org/t/p/original/a698dp7fUEHeArmulWqSc9wZsRY.jpg" },
+      { titulo: "Flow", ano: 2024, nota: 5, poster: "https://image.tmdb.org/t/p/original/o16J2ezv2rITe0ubuQOBen1L2Hk.jpg" },
+      { titulo: "One Piece Film: Red", ano: 2022, nota: null, poster: "https://image.tmdb.org/t/p/original/uBU3snGYZADnKB65b4Nn194viHV.jpg" },
+      { titulo: "Venom: A Última Rodada", ano: 2024, nota: 1.5, poster: "https://image.tmdb.org/t/p/original/fTGJWXuFDcRSIVPgQLbxziGquOC.jpg" },
+      { titulo: "Super-Herói: O Filme", ano: 2008, nota: 2, poster: "https://image.tmdb.org/t/p/original/1eft9sS79hbo8aXnwwmvBXr6AWm.jpg" },
+      { titulo: "Shin Gojira", ano: 2016, nota: null, poster: "https://image.tmdb.org/t/p/original/aJnVDeqGvMc2mbwH8DJds652eEo.jpg" },
+      { titulo: "Divertida Mente 2 ", ano: 2024, nota: 3.5, poster: "https://image.tmdb.org/t/p/original/xGvz7nlGQeePcVOpAzOcHsC7kRt.jpg" },
+      { titulo: "O Espetacular Homem-Aranha 2: A Ameaça de Electro", ano: 2014, nota: 3, poster: "https://image.tmdb.org/t/p/original/6VyN2MXajYyAc0IkxS8KXltMsTj.jpg" },
+      { titulo: "O Segredo dos Animais", ano: 2006, nota: 5, poster: "https://image.tmdb.org/t/p/original/nG4eJPNA4M4odMPR9bso3RZUKOL.jpg" },
+      { titulo: "Clonaram Tyrone!", ano: 2023, nota: null, poster: "https://image.tmdb.org/t/p/original/uLYdX64xJVZEFRQJZQU4A2ueMyB.jpg" }, 
+      { titulo: "Deu a Louca na Chapeuzinho", ano: 2005, nota: 4.5, poster: "https://image.tmdb.org/t/p/original/rsScGMpLG1XzY0MWNeRUVsPlBU5.jpg" },
+      { titulo: "One Piece: Aventura Mortal!", ano: 2003, nota: null, poster: "https://image.tmdb.org/t/p/original/hdxzlbMwNCxtxkVa7UiaNkId2TM.jpg" },
+      { titulo: "One Piece: Flor do Inverno, Milagre da Cerejeira", ano: 2008, nota: null, poster: "https://image.tmdb.org/t/p/original/jpPCv8rO4DjeUkdh6CQGc7ws2pD.jpg" },
+      { titulo: "TO BE HERO X", ano: 2025, nota: null, poster: "https://image.tmdb.org/t/p/original/7ynNG9lYS9HIR8cYMgawO19VPkg.jpg" },
+      { titulo: "Scooby-Doo: O Filme", ano: 2002, nota: null, poster: "https://image.tmdb.org/t/p/original/Nu9v0wUacgq73ggOAKsz4ZtZ2K.jpg" },
+      { titulo: "Look Back", ano: 2024, nota: 4.5, poster: "https://image.tmdb.org/t/p/original/AgBNLcHFEXCRFZuKv0H8RWMxNAJ.jpg" },
+      { titulo: "A Guerra dos Mundos ", ano: 2025, nota: 0.5, poster: "https://image.tmdb.org/t/p/original/hhskI8zwPqzE3wWA3gDNSCvF22z.jpg" },
+      { titulo: "Homem-Aranha 3", ano: 2007, nota: 3, poster: "https://image.tmdb.org/t/p/original/5831VrgpYNPEokBwxurLVpQ3twM.jpg" },
+    ];
+
+    const grid = document.getElementById("grid");
+
+    function renderStars(nota){
+      const wrap = document.createElement("div");
+      wrap.className = "stars";
+
+      for(let i = 1; i <= 5; i++){
+        const star = document.createElement("span");
+        star.className = "star";
+
+        const fill = Math.max(0, Math.min(1, nota - (i - 1)));
+
+        // Ajuste: meia estrela fixa em 41%
+        let percent = fill * 100;
+        if (fill > 0 && fill < 1) {
+          percent = 41;
+        }
+
+        star.style.setProperty("--fill", percent + "%");
+        wrap.appendChild(star);
+      }
+
+      return wrap;
+    }
+
+    function criarPoster(filme){
+      const el = document.createElement("div");
+      el.className = "poster";
+      el.dataset.titulo = filme.titulo.toLowerCase();
+
+      const img = document.createElement("img");
+      img.src = filme.poster;
+      img.alt = `Poster ${filme.titulo}`;
+
+      const overlay = document.createElement("div");
+      overlay.className = "overlay";
+
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = filme.titulo;
+
+      const year = document.createElement("div");
+      year.className = "year";
+      year.textContent = filme.ano;
+
+      overlay.appendChild(name);
+      overlay.appendChild(year);
+      if (filme.nota === null || filme.nota === undefined) {
+        const semNota = document.createElement("div");
+        semNota.className = "no-rating";
+        semNota.textContent = "Sem nota";
+        overlay.appendChild(semNota);
+      } else {
+        overlay.appendChild(renderStars(filme.nota));
+      }
+
+
+      el.appendChild(img);
+      el.appendChild(overlay);
+
+      return el;
+    }
+
+    function render(){
+      grid.innerHTML = "";
+      filmes.forEach(f => grid.appendChild(criarPoster(f)));
+    }
+
+    render();
+
+    const searchInput = document.getElementById("searchInput");
+
+    function filtrar(texto){
+      const q = texto.toLowerCase().trim();
+      const posters = document.querySelectorAll(".poster");
+
+      posters.forEach(p => {
+        const titulo = p.dataset.titulo;
+        const match = titulo.includes(q);
+        p.classList.toggle("hidden", !match);
+      });
+    }
+
+    searchInput.addEventListener("input", (e) => filtrar(e.target.value));
+
+    document.addEventListener("keydown", (e) => {
+      if(e.key === "Escape"){
+        searchInput.value = "";
+        filtrar("");
+      }
+    });
+  </script>
+
+  <footer class="footer">
+  <a href="https://www.twitch.tv/aqueleoli" target="_blank" rel="noopener noreferrer">
+    Twitch.tv/AqueleOli
+  </a>
+</footer>
+
+</body>
+</html>
