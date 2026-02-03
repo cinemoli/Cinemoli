@@ -361,6 +361,7 @@
       const el = document.createElement("div");
       el.className = "poster";
       el.dataset.titulo = filme.titulo.toLowerCase();
+      el.dataset.patrocinado = (filme.patrocinado || "").toLowerCase();
 
       const img = document.createElement("img");
       img.src = filme.poster;
@@ -408,16 +409,19 @@
 
     const searchInput = document.getElementById("searchInput");
 
-    function filtrar(texto) {
-      const q = texto.toLowerCase().trim();
-      const posters = document.querySelectorAll(".poster");
+    function filtrar(texto){
+  const q = texto.toLowerCase().trim();
+  const posters = document.querySelectorAll(".poster");
 
-      posters.forEach(p => {
-        const titulo = p.dataset.titulo;
-        const match = titulo.includes(q);
-        p.classList.toggle("hidden", !match);
-      });
-    }
+  posters.forEach(p => {
+    const titulo = p.dataset.titulo || "";
+    const patrocinado = p.dataset.patrocinado || "";
+
+    const match = titulo.includes(q) || patrocinado.includes(q);
+    p.classList.toggle("hidden", !match);
+  });
+}
+
 
     searchInput.addEventListener("input", (e) => filtrar(e.target.value));
 
