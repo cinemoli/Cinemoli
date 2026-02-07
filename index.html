@@ -359,6 +359,24 @@
       return wrap;
     }
 
+    function capitalizarNomes(texto) {
+      if (!texto) return "";
+
+      const minusculas = ["e", "de", "do", "da", "dos", "das"];
+
+      return texto
+        .toLowerCase()
+        .split(" ")
+        .map((palavra, i) => {
+          if (minusculas.includes(palavra) && i !== 0) {
+            return palavra;
+          }
+          return palavra.charAt(0).toUpperCase() + palavra.slice(1);
+        })
+        .join(" ");
+    }
+
+
     function criarPoster(filme) {
       const el = document.createElement("div");
       el.className = "poster";
@@ -393,7 +411,7 @@
 
       const patrocinado = document.createElement("div");
       patrocinado.className = "patrocinado";
-      patrocinado.textContent = `Por: ${filme.patrocinado}`;
+      patrocinado.textContent = `Por: ${capitalizarNomes(filme.patrocinado)}`;
       overlay.appendChild(patrocinado);
 
       el.appendChild(img);
@@ -411,18 +429,18 @@
 
     const searchInput = document.getElementById("searchInput");
 
-    function filtrar(texto){
-  const q = texto.toLowerCase().trim();
-  const posters = document.querySelectorAll(".poster");
+    function filtrar(texto) {
+      const q = texto.toLowerCase().trim();
+      const posters = document.querySelectorAll(".poster");
 
-  posters.forEach(p => {
-    const titulo = p.dataset.titulo || "";
-    const patrocinado = p.dataset.patrocinado || "";
+      posters.forEach(p => {
+        const titulo = p.dataset.titulo || "";
+        const patrocinado = p.dataset.patrocinado || "";
 
-    const match = titulo.includes(q) || patrocinado.includes(q);
-    p.classList.toggle("hidden", !match);
-  });
-}
+        const match = titulo.includes(q) || patrocinado.includes(q);
+        p.classList.toggle("hidden", !match);
+      });
+    }
 
 
     searchInput.addEventListener("input", (e) => filtrar(e.target.value));
