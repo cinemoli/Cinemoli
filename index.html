@@ -52,7 +52,7 @@
       justify-content: space-between;
       gap: 10px;
       overflow: hidden;
-      /* evita estourar layout */
+
     }
 
     .title {
@@ -73,7 +73,7 @@
       color: rgba(255, 255, 255, 0.6);
     }
 
-    /* Busca */
+
     .search-wrap {
       display: flex;
       align-items: center;
@@ -104,7 +104,7 @@
     }
 
 
-    /* Grid colado */
+
     main {
       padding: 0;
     }
@@ -113,7 +113,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 0;
-      /* colado 1 no outro */
+
     }
 
     .poster {
@@ -121,7 +121,7 @@
       cursor: pointer;
       overflow: hidden;
       border-radius: 0;
-      /* sem canto arredondado */
+
       aspect-ratio: 2 / 3;
       background: #111;
     }
@@ -141,7 +141,7 @@
       filter: brightness(0.45);
     }
 
-    /* Overlay info no hover */
+
     .overlay {
       position: absolute;
       inset: 0;
@@ -173,14 +173,18 @@
     }
 
     .poster.active img {
-      height: 90vh;
+      max-height: 90vh;
       max-width: 90vw;
+
       width: auto;
+      height: auto;
 
       display: block;
       transform: scale(1);
       filter: brightness(1);
+      object-fit: contain;
     }
+
 
 
     .poster.active .overlay {
@@ -201,7 +205,7 @@
       margin-top: 2px;
     }
 
-    /* Estrelas */
+
     .stars {
       display: inline-flex;
       gap: 3px;
@@ -218,7 +222,7 @@
       height: 1em;
     }
 
-    /* apagada */
+
     .star::before {
       content: "★";
       position: absolute;
@@ -226,7 +230,7 @@
       color: rgba(255, 255, 255, 0.25);
     }
 
-    /* preenchida (0% a 100%) */
+
     .star::after {
       content: "★";
       position: absolute;
@@ -234,7 +238,7 @@
       width: var(--fill, 0%);
       overflow: hidden;
       color: #ffcc00;
-      /* AMARELO */
+
     }
 
     .patrocinado {
@@ -268,6 +272,32 @@
       color: #aaaaaa;
       text-decoration: none;
       font-weight: 700;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+
+      .title {
+        align-items: center;
+        text-align: center;
+      }
+
+      .title h1 {
+        font-size: 42px;
+      }
+
+      .search-wrap {
+        width: 100%;
+      }
+
+      .search-input {
+        width: 100%;
+      }
+
     }
   </style>
 </head>
@@ -382,7 +412,7 @@
 
         const fill = Math.max(0, Math.min(1, nota - (i - 1)));
 
-        // Ajuste: meia estrela fixa em 41%
+
         let percent = fill * 100;
         if (fill > 0 && fill < 1) {
           percent = 41;
