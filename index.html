@@ -78,18 +78,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
-    }
-
-    .search-btn {
-      width: 40px;
-      height: 40px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--text);
-      cursor: pointer;
-      font-size: 18px;
-      display: grid;
-      place-items: center;
+      justify-content: flex-end;
     }
 
     .search-input {
@@ -249,9 +238,6 @@
       margin-top: 2px;
     }
 
-    .poster.hidden {
-      display: none;
-    }
 
     .no-rating {
       margin-top: 6px;
@@ -299,6 +285,37 @@
       }
 
     }
+
+    .sort-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sort-star {
+      font-family: "Tektur", sans-serif;
+      font-size: 20px;
+      color: #ffcc00;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .sort-arrow {
+      font-family: "Tektur", sans-serif;
+      font-size: 18px;
+      font-weight: 900;
+      color: #ffffff;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+
+    .sort-arrow.active {
+      opacity: 1;
+    }
   </style>
 </head>
 
@@ -309,9 +326,14 @@
     </div>
 
     <div class="search-wrap">
+      <div class="sort-wrap">
+        <button id="sortReset" class="sort-star">★</button>
+        <button id="sortAsc" class="sort-arrow">↓</button>
+        <button id="sortDesc" class="sort-arrow">↑</button>
+      </div>
+
       <input class="search-input always" id="searchInput" placeholder="Buscar..." />
     </div>
-
   </header>
 
   <main>
@@ -401,6 +423,34 @@
 
 
     const grid = document.getElementById("grid");
+    let textoBusca = "";
+    let ordemNota = null;
+    const sortReset = document.getElementById("sortReset");
+    const sortAsc = document.getElementById("sortAsc");
+    const sortDesc = document.getElementById("sortDesc");
+
+    function atualizarSetas() {
+      sortAsc.classList.toggle("active", ordemNota === "asc");
+      sortDesc.classList.toggle("active", ordemNota === "desc");
+    }
+
+    sortAsc.addEventListener("click", () => {
+      ordemNota = "asc";
+      aplicarFiltros();
+    });
+
+    sortDesc.addEventListener("click", () => {
+      ordemNota = "desc";
+      aplicarFiltros();
+    });
+
+    sortReset.addEventListener("click", () => {
+      ordemNota = null;
+      aplicarFiltros();
+    });
+
+
+
 
     function renderStars(nota) {
       const wrap = document.createElement("div");
@@ -486,12 +536,34 @@
       return el;
     }
 
-    function render() {
+    function aplicarFiltros() {
+      let lista = [...filmes];
+
+      if (textoBusca) {
+        const q = textoBusca.toLowerCase();
+        lista = lista.filter(f =>
+          f.titulo.toLowerCase().includes(q) ||
+          (f.patrocinado || "").toLowerCase().includes(q)
+        );
+      }
+
+      if (ordemNota === "desc") {
+        lista.sort((a, b) => (b.nota ?? -1) - (a.nota ?? -1));
+      }
+
+      if (ordemNota === "asc") {
+        lista.sort((a, b) => (a.nota ?? 999) - (b.nota ?? 999));
+      }
+
       grid.innerHTML = "";
-      filmes.forEach(f => grid.appendChild(criarPoster(f)));
+      lista.forEach(f => grid.appendChild(criarPoster(f)));
+
+
+      atualizarSetas();
     }
 
-    render();
+
+    aplicarFiltros();
     grid.addEventListener("click", (e) => {
       const poster = e.target.closest(".poster");
       if (!poster) return;
@@ -502,30 +574,24 @@
 
     const searchInput = document.getElementById("searchInput");
 
-    function filtrar(texto) {
-      const q = texto.toLowerCase().trim();
-      const posters = document.querySelectorAll(".poster");
-
-      posters.forEach(p => {
-        const titulo = p.dataset.titulo || "";
-        const patrocinado = p.dataset.patrocinado || "";
-
-        const match = titulo.includes(q) || patrocinado.includes(q);
-        p.classList.toggle("hidden", !match);
-      });
-    }
 
 
-    searchInput.addEventListener("input", (e) => filtrar(e.target.value));
+    searchInput.addEventListener("input", (e) => {
+      textoBusca = e.target.value;
+      aplicarFiltros();
+    });
+
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         searchInput.value = "";
-        filtrar("");
+        textoBusca = "";
+        aplicarFiltros();
         document.querySelectorAll(".poster.active")
           .forEach(p => p.classList.remove("active"));
       }
     });
+
   </script>
 
   <footer class="footer">
