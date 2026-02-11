@@ -101,7 +101,7 @@
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 0;
+      overflow: hidden;
 
     }
 
@@ -316,6 +316,34 @@
     .sort-arrow.active {
       opacity: 1;
     }
+
+    .modo-imu body {
+  background: #b30000 !important;
+}
+
+.modo-imu header {
+  background: #000 !important;
+  color: #ff0000 !important;
+  border-bottom: none !important;
+}
+
+.modo-imu .footer {
+  background: #000 !important;
+  color: #ff0000 !important;
+  border-top: none !important;
+}
+
+.modo-imu .footer a {
+  color: #ff0000 !important;
+}
+.modo-imu .poster[data-titulo="flow"] .star::after {
+  color: #ff0000 !important;
+}
+
+.modo-imu .poster[data-titulo="flow"] .star::before {
+  color: rgba(255, 0, 0, 0.3) !important;
+}
+
   </style>
 </head>
 
@@ -427,6 +455,8 @@
     const grid = document.getElementById("grid");
     let textoBusca = "";
     let ordemNota = null;
+    let modoImuAtivo = false;
+
     const sortReset = document.getElementById("sortReset");
     const sortAsc = document.getElementById("sortAsc");
     const sortDesc = document.getElementById("sortDesc");
@@ -494,49 +524,65 @@
         .join(" ");
     }
 
+function censurarTexto(texto) {
+  return "█".repeat(texto.length);
+}
 
-    function criarPoster(filme) {
-      const el = document.createElement("div");
-      el.className = "poster";
-      el.dataset.titulo = filme.titulo.toLowerCase();
-      el.dataset.patrocinado = (filme.patrocinado || "").toLowerCase();
+function criarPoster(filme) {
+  const el = document.createElement("div");
+  el.className = "poster";
+  el.dataset.titulo = filme.titulo.toLowerCase();
+  el.dataset.patrocinado = (filme.patrocinado || "").toLowerCase();
 
-      const img = document.createElement("img");
-      img.src = filme.poster;
-      img.alt = `Poster ${filme.titulo}`;
+  const img = document.createElement("img");
 
-      const overlay = document.createElement("div");
-      overlay.className = "overlay";
+  if (modoImuAtivo && filme.titulo.toLowerCase() !== "flow") {
+    img.src = "imu.gif";
+  } else {
+    img.src = filme.poster;
+  }
 
-      const name = document.createElement("div");
-      name.className = "name";
-      name.textContent = filme.titulo;
+  img.alt = `Poster ${filme.titulo}`;
 
-      const year = document.createElement("div");
-      year.className = "year";
-      year.textContent = filme.ano;
+  const overlay = document.createElement("div");
+  overlay.className = "overlay";
 
-      overlay.appendChild(name);
-      overlay.appendChild(year);
-      if (filme.nota === null || filme.nota === undefined) {
-        const semNota = document.createElement("div");
-        semNota.className = "no-rating";
-        semNota.textContent = "Sem nota";
-        overlay.appendChild(semNota);
-      } else {
-        overlay.appendChild(renderStars(filme.nota));
-      }
+  const name = document.createElement("div");
+  name.className = "name";
+  if (modoImuAtivo && filme.titulo.toLowerCase() !== "flow") {
+  name.textContent = censurarTexto(filme.titulo);
+} else {
+  name.textContent = filme.titulo;
+}
 
-      const patrocinado = document.createElement("div");
-      patrocinado.className = "patrocinado";
-      patrocinado.textContent = `Por: ${capitalizarNomes(filme.patrocinado)}`;
-      overlay.appendChild(patrocinado);
 
-      el.appendChild(img);
-      el.appendChild(overlay);
+  const year = document.createElement("div");
+  year.className = "year";
+  year.textContent = filme.ano;
 
-      return el;
-    }
+  overlay.appendChild(name);
+  overlay.appendChild(year);
+
+  if (filme.nota === null || filme.nota === undefined) {
+    const semNota = document.createElement("div");
+    semNota.className = "no-rating";
+    semNota.textContent = "Sem nota";
+    overlay.appendChild(semNota);
+  } else {
+    overlay.appendChild(renderStars(filme.nota));
+  }
+
+  const patrocinado = document.createElement("div");
+  patrocinado.className = "patrocinado";
+  patrocinado.textContent = `Por: ${capitalizarNomes(filme.patrocinado)}`;
+  overlay.appendChild(patrocinado);
+
+  el.appendChild(img);
+  el.appendChild(overlay);
+
+  return el;
+}
+
 
     function aplicarFiltros() {
       let lista = [...filmes];
@@ -593,6 +639,73 @@
           .forEach(p => p.classList.remove("active"));
       }
     });
+
+(function () {
+  const CHANCE = 0.05;
+  if (Math.random() > CHANCE) return;
+
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.inset = "0";
+  overlay.style.background = "black";
+  overlay.style.zIndex = "99999";
+  overlay.style.display = "flex";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.opacity = "1";
+  overlay.style.transition = "opacity 1s ease";
+
+  const video = document.createElement("video");
+  video.src = "imu.mp4";
+  video.autoplay = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.playbackRate = 1.5;
+  video.style.width = "100vw";
+  video.style.height = "100vh";
+  video.style.objectFit = "cover";
+
+  overlay.appendChild(video);
+  document.body.appendChild(overlay);
+
+  video.play().catch(() => overlay.remove());
+
+  function finalizar() {
+    overlay.style.opacity = "0";
+    setTimeout(() => overlay.remove(), 1000);
+  }
+
+  video.addEventListener("ended", finalizar);
+  setTimeout(finalizar, 20000);
+
+  modoImuAtivo = true;
+  document.documentElement.classList.add("modo-imu");
+
+  filmes.forEach(f => {
+    if (f.titulo.trim().toLowerCase() !== "flow") {
+      f.nota = 0;
+    }
+    f.patrocinado = "Imu";
+  });
+
+  aplicarFiltros();
+
+  const logo = document.querySelector(".title img");
+  if (logo) logo.src = "logo_alt.png";
+
+  window.addEventListener("load", () => {
+  if (modoImuAtivo) {
+    const footerLink = document.querySelector(".footer a");
+    if (footerLink) {
+      footerLink.textContent = "Kick.com/foioguto";
+      footerLink.href = "https://kick.com/foioguto";
+    }
+  }
+});
+
+
+})();
+
 
   </script>
 
